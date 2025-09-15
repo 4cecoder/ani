@@ -20,6 +20,7 @@ export function useHangout() {
   const setTypingIndicator = useMutation(api.hangout.setTypingIndicator);
   const addReaction = useMutation(api.hangout.addReaction);
   const markMessageAsRead = useMutation(api.hangout.markMessageAsRead);
+  const deleteMessage = useMutation(api.hangout.deleteMessage);
 
   // Queries
   const mainHangout = useQuery(api.hangout.getMainHangout);
@@ -170,6 +171,19 @@ export function useHangout() {
     }
   };
 
+  const deleteMessageById = async (messageId: Id<"messages">) => {
+    if (!currentUserId) return;
+
+    try {
+      await deleteMessage({
+        messageId,
+        userId: currentUserId,
+      });
+    } catch (error) {
+      console.error("Failed to delete message:", error);
+    }
+  };
+
   // Auto-mark messages as read when they come into view
   useEffect(() => {
     if (currentUserId && messages) {
@@ -204,6 +218,7 @@ export function useHangout() {
     sendMessage: sendHangoutMessage,
     addReaction: addMessageReaction,
     markAsRead,
+    deleteMessage: deleteMessageById,
     handleTyping,
     isConnected: !!currentUserId && !!mainHangout,
   };

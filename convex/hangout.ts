@@ -100,6 +100,7 @@ export const getHangoutMessages = query({
     const messages = await ctx.db
       .query("messages")
       .filter((q) => q.eq(q.field("channelId"), mainChannel._id))
+      .filter((q) => q.neq(q.field("deleted"), true))
       .order("desc")
       .take(limit);
 
@@ -164,6 +165,7 @@ export const sendHangoutMessage = mutation({
       type: args.type || "text",
       metadata: args.replyTo ? { replyTo: args.replyTo } : undefined,
       edited: false,
+      deleted: false,
       createdAt: Date.now(),
     });
 
@@ -361,6 +363,39 @@ export const markMessageAsRead = mutation({
 
       await ctx.db.patch(args.messageId, { readBy });
     }
+  },
+});
+
+// Delete a message
+export const deleteMessage = mutation({
+  args: {
+    messageId: v.id("messages"),
+    userId: v.id("users"),
+  },
+  handler: async (ctx, args) => {
+    const message = await ctx.db.get(args.messageId);
+    if (!message) {
+      throw new Error("Message not found");
+    }
+
+    // Check if user is the author of the message
+    if (message.authorId !== args.userId) {
+      throw new Error("You can only delete your own messages");
+    }
+
+    // Check if message is already deleted
+    if (message.deleted === true) {
+      throw new Error("Message is already deleted");
+    }
+
+    // Mark message as deleted
+    await ctx.db.patch(args.messageId, {
+      deleted: true,
+      deletedAt: Date.now(),
+      deletedBy: args.userId,
+    });
+
+    return { success: true, messageId: args.messageId };
   },
 });
 

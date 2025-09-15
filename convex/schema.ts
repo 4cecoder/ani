@@ -52,6 +52,9 @@ export default defineSchema({
     }))),
     edited: v.boolean(),
     editedAt: v.optional(v.number()),
+    deleted: v.optional(v.boolean()),
+    deletedAt: v.optional(v.number()),
+    deletedBy: v.optional(v.id("users")),
     readBy: v.optional(v.array(v.object({
       userId: v.id("users"),
       readAt: v.number(),

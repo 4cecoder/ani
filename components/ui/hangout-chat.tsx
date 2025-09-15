@@ -26,6 +26,7 @@ export function HangoutChat() {
     typingUsers,
     sendMessage,
     addReaction,
+    deleteMessage,
     handleTyping,
     isConnected
   } = useHangout();
@@ -60,6 +61,12 @@ export function HangoutChat() {
   const handleReply = (messageId: Id<"messages">, username: string, content: string) => {
     setReplyingTo({ messageId, username, content });
     inputRef.current?.focus();
+  };
+
+  const handleDelete = (messageId: Id<"messages">) => {
+    if (deleteMessage) {
+      deleteMessage(messageId);
+    }
   };
 
   const cancelReply = () => {
@@ -206,6 +213,7 @@ export function HangoutChat() {
                     currentUserId={currentUserId}
                     onReaction={addReaction}
                     onReply={(messageId) => handleReply(messageId, msg.author?.username || "User", msg.content)}
+                    onDelete={handleDelete}
                     replyTo={replyToMessage ? {
                       username: replyToMessage.author?.username || "User",
                       content: replyToMessage.content

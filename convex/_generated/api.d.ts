@@ -14,6 +14,7 @@ import type {
   FunctionReference,
 } from "convex/server";
 import type * as hangout from "../hangout.js";
+import type * as posts from "../posts.js";
 import type * as uiState from "../uiState.js";
 
 /**
@@ -26,6 +27,7 @@ import type * as uiState from "../uiState.js";
  */
 declare const fullApi: ApiFromModules<{
   hangout: typeof hangout;
+  posts: typeof posts;
   uiState: typeof uiState;
 }>;
 export declare const api: FilterApi<

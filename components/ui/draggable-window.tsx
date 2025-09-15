@@ -2,8 +2,10 @@
 
 import React, { useRef, useState, useEffect, useCallback } from "react";
 import { Maximize2, Minimize2, X, GripVertical } from "lucide-react";
+import { useWindowPosition } from "@/lib/hooks/useWindowPosition";
 
 interface DraggableWindowProps {
+  windowId: string;
   title?: string;
   children: React.ReactNode;
   className?: string;
@@ -19,6 +21,7 @@ interface DraggableWindowProps {
 }
 
 export function DraggableWindow({ 
+  windowId,
   title, 
   children, 
   className = "",
@@ -33,32 +36,26 @@ export function DraggableWindow({
   bringToFront
 }: DraggableWindowProps) {
   const windowRef = useRef<HTMLDivElement>(null);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
   const [dragging, setDragging] = useState(false);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
-  const [isMaximized, setIsMaximized] = useState(false);
-  const [size, setSize] = useState({ width, height });
   const [resizing, setResizing] = useState(false);
   const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, width: 0, height: 0 });
-  const [activeZIndex, setActiveZIndex] = useState(zIndex);
+  
+  // Use the window position hook
+  const { position, updatePosition } = useWindowPosition({
+    windowId,
+    defaultPosition: { x: 100, y: 100 },
+    defaultSize: { width, height },
+    minSize: { width: 300, height: 200 },
+    maxSize: { width: 1200, height: 800 },
+  });
 
   // Bring window to front when clicked
   const handleBringToFront = useCallback(() => {
-    setActiveZIndex(prev => Math.max(prev, zIndex + 10));
+    const newZIndex = Math.max(position.zIndex, zIndex + 10);
+    updatePosition({ zIndex: newZIndex });
     bringToFront?.();
-  }, [zIndex, bringToFront]);
-
-  // Set initial position on client only
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const centerX = window.innerWidth / 2 - width / 2;
-      const centerY = window.innerHeight / 2 - height / 2;
-      setPosition({
-        x: Math.max(20, Math.min(centerX, window.innerWidth - width - 20)),
-        y: Math.max(80, Math.min(centerY, window.innerHeight - height - 20)),
-      });
-    }
-  }, [width, height]);
+  }, [position.zIndex, zIndex, bringToFront, updatePosition]);
 
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target instanceof HTMLElement && e.target.closest('button')) return;
@@ -80,13 +77,13 @@ export function DraggableWindow({
   };
 
   const handleMouseMove = (e: MouseEvent) => {
-    if (dragging && !isMaximized) {
+    if (dragging && !position.isMaximized) {
       let newX = e.clientX - offset.x;
       let newY = e.clientY - offset.y;
       
       // Keep window within viewport bounds
-      const maxX = window.innerWidth - size.width;
-      const maxY = window.innerHeight - size.height;
+      const maxX = window.innerWidth - position.width;
+      const maxY = window.innerHeight - position.height;
       
       // Snap to edges if enabled
       if (snapToEdges) {
@@ -97,16 +94,16 @@ export function DraggableWindow({
         if (Math.abs(newY - maxY) < snapThreshold) newY = maxY;
       }
       
-      setPosition({
+      updatePosition({
         x: Math.max(0, Math.min(newX, maxX)),
         y: Math.max(0, Math.min(newY, maxY)),
       });
     }
     
-    if (resizing && resizable && !isMaximized) {
+    if (resizing && resizable && !position.isMaximized) {
       const newWidth = Math.max(300, resizeStart.width + (e.clientX - resizeStart.x));
       const newHeight = Math.max(200, resizeStart.height + (e.clientY - resizeStart.y));
-      setSize({ width: newWidth, height: newHeight });
+      updatePosition({ width: newWidth, height: newHeight });
     }
   };
 
@@ -117,27 +114,29 @@ export function DraggableWindow({
     setResizeStart({
       x: e.clientX,
       y: e.clientY,
-      width: size.width,
-      height: size.height,
+      width: position.width,
+      height: position.height,
     });
     handleBringToFront();
     document.body.style.cursor = "nwse-resize";
   };
 
   const handleMaximize = () => {
-    if (isMaximized) {
-      setIsMaximized(false);
-      setSize({ width, height });
-      setPosition({
+    if (position.isMaximized) {
+      updatePosition({
+        isMaximized: false,
+        width: width,
+        height: height,
         x: window.innerWidth / 2 - width / 2,
         y: window.innerHeight / 2 - height / 2,
       });
     } else {
-      setIsMaximized(true);
-      setPosition({ x: 0, y: 0 });
-      setSize({ 
-        width: window.innerWidth, 
-        height: window.innerHeight 
+      updatePosition({
+        isMaximized: true,
+        x: 0,
+        y: 0,
+        width: window.innerWidth,
+        height: window.innerHeight,
       });
     }
     handleBringToFront();
@@ -152,7 +151,7 @@ export function DraggableWindow({
       onMinimize();
     } else if (e.ctrlKey && e.key === "x") {
       handleMaximize();
-    } else if (!isMaximized) {
+    } else if (!position.isMaximized) {
       const moveStep = e.shiftKey ? 50 : 10;
       let newX = position.x;
       let newY = position.y;
@@ -174,16 +173,16 @@ export function DraggableWindow({
           return;
       }
       
-      const maxX = window.innerWidth - size.width;
-      const maxY = window.innerHeight - size.height;
+      const maxX = window.innerWidth - position.width;
+      const maxY = window.innerHeight - position.height;
       
-      setPosition({
+      updatePosition({
         x: Math.max(0, Math.min(newX, maxX)),
         y: Math.max(0, Math.min(newY, maxY)),
       });
       e.preventDefault();
     }
-  }, [position, size, isMaximized, onClose, onMinimize, handleMaximize]);
+  }, [position, onClose, onMinimize, handleMaximize]);
 
   useEffect(() => {
     if (dragging || resizing) {
@@ -206,9 +205,9 @@ export function DraggableWindow({
         position: "fixed",
         left: position.x,
         top: position.y,
-        zIndex: activeZIndex,
-        width: isMaximized ? "100vw" : size.width,
-        height: isMaximized ? "100vh" : size.height,
+        zIndex: position.zIndex,
+        width: position.isMaximized ? "100vw" : position.width,
+        height: position.isMaximized ? "100vh" : position.height,
         transition: dragging || resizing ? "none" : "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
       }}
       className={`
@@ -263,8 +262,8 @@ export function DraggableWindow({
           <button
             onClick={(e) => { e.stopPropagation(); handleMaximize(); }}
             className="text-white/60 hover:text-white p-1.5 rounded transition-colors"
-            aria-label={isMaximized ? "Restore window" : "Maximize window"}
-            title={isMaximized ? "Restore (Ctrl+X)" : "Maximize (Ctrl+X)"}
+            aria-label={position.isMaximized ? "Restore window" : "Maximize window"}
+            title={position.isMaximized ? "Restore (Ctrl+X)" : "Maximize (Ctrl+X)"}
           >
             <Maximize2 size={14} />
           </button>
@@ -288,7 +287,7 @@ export function DraggableWindow({
         </div>
         
         {/* Resize Handle */}
-        {resizable && !isMaximized && (
+        {resizable && !position.isMaximized && (
           <div
             onMouseDown={handleResizeStart}
             className="absolute bottom-0 right-0 w-4 h-4 cursor-nwse-resize opacity-60 hover:opacity-100 transition-opacity"

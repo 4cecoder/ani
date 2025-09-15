@@ -4,12 +4,17 @@ import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 import { DraggableWindow } from "@/components/ui/draggable-window";
 import { HangoutChat } from "@/components/ui/hangout-chat";
 import { OnlineUsers } from "@/components/ui/online-users";
+import { PostsFeed } from "@/components/ui/posts-feed";
 import { useState } from "react";
-import { MessageSquare, Users, Sparkles, UserPlus } from "lucide-react";
+import { MessageSquare, Users, Sparkles, UserPlus, FileText } from "lucide-react";
+import { useHangout } from "@/lib/hooks/useHangout";
 
 export default function Home() {
   const [showChat, setShowChat] = useState(true);
   const [showUsers, setShowUsers] = useState(true);
+  const [showPosts, setShowPosts] = useState(true);
+  
+  const { currentUserId } = useHangout();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900/90 via-blue-900/90 to-indigo-900/90 dark:from-purple-950/95 dark:via-blue-950/95 dark:to-indigo-950/95 relative overflow-hidden">
@@ -93,6 +98,7 @@ export default function Home() {
       {/* Floating Chat Window */}
       {showChat && (
         <DraggableWindow
+          windowId="main-hangout-chat"
           title="🎉 Main Hangout"
           width={450}
           height={600}
@@ -107,6 +113,7 @@ export default function Home() {
       <SignedIn>
         {showUsers && (
           <DraggableWindow
+            windowId="online-users"
             title="👥 Who's Online"
             width={280}
             height={400}
@@ -116,6 +123,22 @@ export default function Home() {
             <div className="h-full p-4">
               <OnlineUsers />
             </div>
+          </DraggableWindow>
+        )}
+      </SignedIn>
+
+      {/* Posts Feed Window */}
+      <SignedIn>
+        {showPosts && (
+          <DraggableWindow
+            windowId="posts-feed"
+            title="📝 Hangout Feed"
+            width={500}
+            height={700}
+            onClose={() => setShowPosts(false)}
+            className="shadow-2xl"
+          >
+            <PostsFeed currentUserId={currentUserId} />
           </DraggableWindow>
         )}
       </SignedIn>
@@ -142,6 +165,17 @@ export default function Home() {
             >
               <UserPlus className="w-6 h-6" />
               <span className="hidden sm:inline">Users</span>
+            </button>
+          )}
+
+          {!showPosts && (
+            <button
+              onClick={() => setShowPosts(true)}
+              className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white p-4 rounded-full shadow-2xl transition-all duration-300 transform hover:scale-110 flex items-center gap-3"
+              aria-label="Open posts feed"
+            >
+              <FileText className="w-6 h-6" />
+              <span className="hidden sm:inline">Posts</span>
             </button>
           )}
         </SignedIn>
