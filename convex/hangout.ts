@@ -164,7 +164,6 @@ export const sendHangoutMessage = mutation({
       type: args.type || "text",
       metadata: args.replyTo ? { replyTo: args.replyTo } : undefined,
       edited: false,
-      readBy: [],
       createdAt: Date.now(),
     });
 

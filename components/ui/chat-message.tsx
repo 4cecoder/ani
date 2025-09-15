@@ -1,23 +1,45 @@
 import { ReactNode } from 'react';
+import type { Id } from "@/convex/_generated/dataModel";
+
+interface Reaction {
+  emoji: string;
+  users: Id<"users">[];
+  count: number;
+}
 
 interface ChatMessageProps {
+  messageId: Id<"messages">;
   avatar: ReactNode;
   username: string;
   timestamp: string | Date;
   content: string;
   isOwn?: boolean;
   status?: 'sent' | 'delivered' | 'read';
-  reactions?: Array<{ emoji: string; count: number; userReacted?: boolean }>;
+  reactions?: Reaction[];
+  currentUserId?: Id<"users"> | null;
+  onReaction?: (messageId: Id<"messages">, emoji: string) => void;
+  onReply?: (messageId: Id<"messages">) => void;
+  replyTo?: {
+    username: string;
+    content: string;
+  };
+  readBy?: Array<{ userId: Id<"users">; readAt: number }>;
 }
 
 export function ChatMessage({
+  messageId,
   avatar,
   username,
   timestamp,
   content,
   isOwn = false,
   status = 'sent',
-  reactions = []
+  reactions = [],
+  currentUserId,
+  onReaction,
+  onReply,
+  replyTo,
+  readBy = []
 }: ChatMessageProps) {
   const formatTimestamp = (ts: string | Date) => {
     try {
@@ -41,47 +63,65 @@ export function ChatMessage({
 
   const getStatusIcon = () => {
     if (!isOwn) return null;
-    
+
+    // Determine status based on readBy array
+    const readByCount = readBy.length;
+    let actualStatus = status;
+
+    if (readByCount > 0) {
+      actualStatus = 'read';
+    } else if (Date.now() - new Date(timestamp).getTime() > 1000) {
+      actualStatus = 'delivered';
+    }
+
     const icons = {
       sent: '✓',
       delivered: '✓✓',
       read: '✓✓'
     };
-    
+
     const colors = {
-      sent: 'text-muted-foreground',
+      sent: 'text-muted-foreground/60',
       delivered: 'text-muted-foreground',
       read: 'text-blue-500'
     };
-    
+
     return (
-      <span className={`text-xs ${colors[status]} ml-1`}>
-        {icons[status]}
+      <span className={`text-xs ${colors[actualStatus]} ml-1`} title={`${actualStatus}${readByCount > 0 ? ` • Read by ${readByCount}` : ''}`}>
+        {icons[actualStatus]}
       </span>
     );
   };
 
+  const commonEmojis = ['👍', '❤️', '😂', '😮', '😢', '😠'];
+
+  const handleEmojiClick = (emoji: string) => {
+    if (onReaction) {
+      onReaction(messageId, emoji);
+    }
+  };
+
   return (
     <div className={`
-      flex gap-3 px-4 py-2 
+      relative flex gap-3 px-4 py-2
       hover:bg-accent/5 transition-colors duration-200
       group/message
       ${isOwn ? 'flex-row-reverse' : ''}
     `}>
       {/* Avatar */}
       <div className={`
-        w-10 h-10 rounded-full flex-shrink-0 
-        ring-2 ring-background 
+        w-10 h-10 rounded-full flex-shrink-0
+        ring-2 ring-background
         transition-all duration-200
         group-hover/message:ring-accent/30
         ${isOwn ? 'order-2' : ''}
       `}>
         {avatar}
       </div>
-      
+
       {/* Message Content */}
       <div className={`
-        flex-1 min-w-0 
+        relative flex-1 min-w-0
         ${isOwn ? 'text-right' : ''}
       `}>
         {/* Header */}
@@ -118,31 +158,81 @@ export function ChatMessage({
           </p>
         </div>
         
-        {/* Reactions */}
-        {reactions.length > 0 && (
-          <div className={`
-            flex gap-1 mt-2 
-            ${isOwn ? 'justify-end' : 'justify-start'}
-          `}>
-            {reactions.map((reaction, index) => (
-              <button
-                key={index}
-                className={`
-                  inline-flex items-center gap-1 px-2 py-1 rounded-full
-                  text-xs border transition-all duration-200
-                  hover:scale-105 active:scale-95
-                  ${reaction.userReacted 
-                    ? 'bg-accent text-accent-foreground border-accent/50' 
-                    : 'bg-background text-muted-foreground border-border/50 hover:border-border'
-                  }
-                `}
-              >
-                <span>{reaction.emoji}</span>
-                <span>{reaction.count}</span>
-              </button>
-            ))}
+        {/* Reply Preview */}
+        {replyTo && (
+          <div className="mb-2 p-2 border-l-2 border-accent/50 bg-muted/20 rounded-r text-xs">
+            <div className="font-medium text-accent">{replyTo.username}</div>
+            <div className="text-muted-foreground truncate">{replyTo.content}</div>
           </div>
         )}
+
+        {/* Reactions */}
+        {reactions && reactions.length > 0 && (
+          <div className={`
+            flex gap-1 mt-2
+            ${isOwn ? 'justify-end' : 'justify-start'}
+          `}>
+            {reactions.map((reaction, index) => {
+              const userReacted = currentUserId && reaction.users.includes(currentUserId);
+              return (
+                <button
+                  key={index}
+                  onClick={() => handleEmojiClick(reaction.emoji)}
+                  className={`
+                    inline-flex items-center gap-1 px-2 py-1 rounded-full
+                    text-xs border transition-all duration-200
+                    hover:scale-105 active:scale-95
+                    ${userReacted
+                      ? 'bg-accent text-accent-foreground border-accent/50'
+                      : 'bg-background text-muted-foreground border-border/50 hover:border-border'
+                    }
+                  `}
+                >
+                  <span>{reaction.emoji}</span>
+                  <span>{reaction.count}</span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Quick Reaction Bar (shows on hover) */}
+        <div className={`
+          opacity-0 group-hover/message:opacity-100
+          transition-opacity duration-200
+          absolute -top-1 z-10
+          flex gap-1
+          bg-background border border-border rounded-lg shadow-lg p-1
+          ${isOwn ? 'left-0' : 'right-0'}
+        `}>
+          {commonEmojis.map((emoji) => (
+            <button
+              key={emoji}
+              onClick={() => handleEmojiClick(emoji)}
+              className="
+                w-6 h-6 flex items-center justify-center
+                hover:bg-accent rounded text-sm
+                transition-colors duration-150
+              "
+              title={`React with ${emoji}`}
+            >
+              {emoji}
+            </button>
+          ))}
+          {onReply && (
+            <button
+              onClick={() => onReply(messageId)}
+              className="
+                w-6 h-6 flex items-center justify-center
+                hover:bg-accent rounded text-xs
+                transition-colors duration-150
+              "
+              title="Reply to message"
+            >
+              ↩️
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

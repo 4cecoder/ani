@@ -52,10 +52,10 @@ export default defineSchema({
     }))),
     edited: v.boolean(),
     editedAt: v.optional(v.number()),
-    readBy: v.array(v.object({
+    readBy: v.optional(v.array(v.object({
       userId: v.id("users"),
       readAt: v.number(),
-    })),
+    }))),
     createdAt: v.number(),
   })
     .index("by_channel", ["channelId"])

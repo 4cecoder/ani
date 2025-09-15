@@ -3,23 +3,29 @@
 import { useUser } from "@clerk/nextjs";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import type { Id } from "@/convex/_generated/dataModel";
 
 export function useHangout() {
   const { user, isLoaded } = useUser();
   const [currentUserId, setCurrentUserId] = useState<Id<"users"> | null>(null);
+  const [isTyping, setIsTyping] = useState(false);
+  const typingTimeoutRef = useRef<NodeJS.Timeout>();
 
   // Convex mutations and queries
   const createOrGetUser = useMutation(api.hangout.createOrGetUser);
   const createMainHangout = useMutation(api.hangout.createMainHangout);
   const sendMessage = useMutation(api.hangout.sendHangoutMessage);
   const updateUserStatus = useMutation(api.hangout.updateUserStatus);
+  const setTypingIndicator = useMutation(api.hangout.setTypingIndicator);
+  const addReaction = useMutation(api.hangout.addReaction);
+  const markMessageAsRead = useMutation(api.hangout.markMessageAsRead);
 
   // Queries
   const mainHangout = useQuery(api.hangout.getMainHangout);
   const messages = useQuery(api.hangout.getHangoutMessages, { limit: 100 });
   const onlineUsers = useQuery(api.hangout.getOnlineUsers);
+  const typingUsers = useQuery(api.hangout.getTypingUsers) || [];
 
   // Initialize user and hangout when Clerk user is loaded
   useEffect(() => {
@@ -84,19 +90,108 @@ export function useHangout() {
     }
   }, [currentUserId, updateUserStatus]);
 
-  const sendHangoutMessage = async (content: string) => {
+  // Typing indicator management
+  const handleTyping = useCallback(async () => {
+    if (!currentUserId) return;
+
+    if (!isTyping) {
+      setIsTyping(true);
+      await setTypingIndicator({
+        userId: currentUserId,
+        isTyping: true,
+      });
+    }
+
+    // Clear existing timeout
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    // Set new timeout to stop typing indicator
+    typingTimeoutRef.current = setTimeout(async () => {
+      setIsTyping(false);
+      if (currentUserId) {
+        await setTypingIndicator({
+          userId: currentUserId,
+          isTyping: false,
+        });
+      }
+    }, 2000);
+  }, [currentUserId, isTyping, setTypingIndicator]);
+
+  const sendHangoutMessage = async (content: string, replyTo?: Id<"messages">) => {
     if (!currentUserId || !content.trim()) return;
 
     try {
+      // Stop typing indicator
+      if (isTyping) {
+        setIsTyping(false);
+        await setTypingIndicator({
+          userId: currentUserId,
+          isTyping: false,
+        });
+      }
+
       await sendMessage({
         content: content.trim(),
         authorId: currentUserId,
         type: "text",
+        replyTo,
       });
     } catch (error) {
       console.error("Failed to send message:", error);
     }
   };
+
+  const addMessageReaction = async (messageId: Id<"messages">, emoji: string) => {
+    if (!currentUserId) return;
+
+    try {
+      await addReaction({
+        messageId,
+        userId: currentUserId,
+        emoji,
+      });
+    } catch (error) {
+      console.error("Failed to add reaction:", error);
+    }
+  };
+
+  const markAsRead = async (messageId: Id<"messages">) => {
+    if (!currentUserId) return;
+
+    try {
+      await markMessageAsRead({
+        messageId,
+        userId: currentUserId,
+      });
+    } catch (error) {
+      console.error("Failed to mark message as read:", error);
+    }
+  };
+
+  // Auto-mark messages as read when they come into view
+  useEffect(() => {
+    if (currentUserId && messages) {
+      const unreadMessages = messages.filter(
+        msg => msg.authorId !== currentUserId &&
+        !msg.readBy?.some(r => r.userId === currentUserId)
+      );
+
+      unreadMessages.forEach(msg => {
+        markAsRead(msg._id);
+      });
+    }
+  }, [messages, currentUserId]);
+
+  // Cleanup typing timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+    };
+  }, []);
 
   return {
     user,
@@ -105,7 +200,11 @@ export function useHangout() {
     mainHangout,
     messages: messages || [],
     onlineUsers: onlineUsers || [],
+    typingUsers: typingUsers || [],
     sendMessage: sendHangoutMessage,
+    addReaction: addMessageReaction,
+    markAsRead,
+    handleTyping,
     isConnected: !!currentUserId && !!mainHangout,
   };
 }

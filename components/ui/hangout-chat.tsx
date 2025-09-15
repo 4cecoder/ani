@@ -1,13 +1,20 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Send, Users, Circle } from "lucide-react";
+import { Send, Users, Circle, Reply } from "lucide-react";
 import { ChatMessage } from "./chat-message";
+import { TypingIndicator } from "./typing-indicator";
 import { useHangout } from "@/lib/hooks/useHangout";
 import { SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
+import type { Id } from "@/convex/_generated/dataModel";
 
 export function HangoutChat() {
   const [message, setMessage] = useState("");
+  const [replyingTo, setReplyingTo] = useState<{
+    messageId: Id<"messages">;
+    username: string;
+    content: string;
+  } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -16,7 +23,10 @@ export function HangoutChat() {
     isUserLoaded,
     messages,
     onlineUsers,
+    typingUsers,
     sendMessage,
+    addReaction,
+    handleTyping,
     isConnected
   } = useHangout();
 
@@ -36,9 +46,24 @@ export function HangoutChat() {
     e.preventDefault();
     if (!message.trim() || !isConnected) return;
 
-    await sendMessage(message);
+    await sendMessage(message, replyingTo?.messageId);
     setMessage("");
+    setReplyingTo(null);
     inputRef.current?.focus();
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setMessage(e.target.value);
+    handleTyping();
+  };
+
+  const handleReply = (messageId: Id<"messages">, username: string, content: string) => {
+    setReplyingTo({ messageId, username, content });
+    inputRef.current?.focus();
+  };
+
+  const cancelReply = () => {
+    setReplyingTo(null);
   };
 
   const formatTimestamp = (timestamp: number) => {
@@ -161,17 +186,38 @@ export function HangoutChat() {
             </div>
           ) : (
             <div className="py-2">
-              {messages.map((msg) => (
-                <ChatMessage
-                  key={msg._id}
-                  avatar={getAvatarComponent(msg.author?.username || "User", msg.author?.avatar)}
-                  username={msg.author?.username || "Unknown User"}
-                  timestamp={formatTimestamp(msg.createdAt)}
-                  content={msg.content}
-                  isOwn={msg.authorId === currentUserId}
-                  status="delivered"
-                />
-              ))}
+              {messages.map((msg) => {
+                // Find reply-to message if this is a reply
+                const replyToMessage = msg.metadata?.replyTo
+                  ? messages.find(m => m._id === msg.metadata?.replyTo)
+                  : undefined;
+
+                return (
+                  <ChatMessage
+                    key={msg._id}
+                    messageId={msg._id}
+                    avatar={getAvatarComponent(msg.author?.username || "User", msg.author?.avatar)}
+                    username={msg.author?.username || "Unknown User"}
+                    timestamp={formatTimestamp(msg.createdAt)}
+                    content={msg.content}
+                    isOwn={msg.authorId === currentUserId}
+                    status="delivered"
+                    reactions={msg.reactions}
+                    currentUserId={currentUserId}
+                    onReaction={addReaction}
+                    onReply={(messageId) => handleReply(messageId, msg.author?.username || "User", msg.content)}
+                    replyTo={replyToMessage ? {
+                      username: replyToMessage.author?.username || "User",
+                      content: replyToMessage.content
+                    } : undefined}
+                    readBy={msg.readBy}
+                  />
+                );
+              })}
+
+              {/* Typing Indicator */}
+              <TypingIndicator typingUsers={typingUsers} />
+
               <div ref={messagesEndRef} />
             </div>
           )}
@@ -181,14 +227,40 @@ export function HangoutChat() {
       {/* Input */}
       <SignedIn>
         <div className="p-4 border-t border-border/30 bg-muted/10">
+          {/* Reply Preview */}
+          {replyingTo && (
+            <div className="mb-3 p-3 bg-accent/10 border-l-4 border-accent rounded-r-lg">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-sm">
+                  <Reply size={14} className="text-accent" />
+                  <span className="text-accent font-medium">Replying to {replyingTo.username}</span>
+                </div>
+                <button
+                  onClick={cancelReply}
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                  aria-label="Cancel reply"
+                >
+                  ✕
+                </button>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1 truncate">
+                {replyingTo.content}
+              </p>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="flex gap-3">
             <div className="flex-1">
               <input
                 ref={inputRef}
                 type="text"
                 value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                placeholder={isConnected ? "Type your message..." : "Connecting..."}
+                onChange={handleInputChange}
+                placeholder={
+                  !isConnected ? "Connecting..." :
+                  replyingTo ? `Reply to ${replyingTo.username}...` :
+                  "Type your message..."
+                }
                 disabled={!isConnected}
                 className="w-full bg-background border border-border rounded-xl px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 maxLength={1000}
@@ -208,6 +280,11 @@ export function HangoutChat() {
             <div className="flex justify-between items-center mt-2 text-xs text-muted-foreground">
               <span>
                 {onlineUsers.length} user{onlineUsers.length !== 1 ? 's' : ''} online
+                {typingUsers.length > 0 && (
+                  <span className="ml-2 text-accent">
+                    • {typingUsers.length} typing
+                  </span>
+                )}
               </span>
               <span>{message.length}/1000</span>
             </div>
