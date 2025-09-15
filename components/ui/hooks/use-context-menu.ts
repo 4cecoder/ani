@@ -108,8 +108,8 @@ export function useContextMenu(options: UseContextMenuOptions): UseContextMenuRe
     event.preventDefault();
     event.stopPropagation();
 
-    const clientX = 'clientX' in event ? event.clientX : event.pageX;
-    const clientY = 'clientY' in event ? event.clientY : event.pageY;
+    const clientX = 'clientX' in event ? event.clientX : (event as MouseEvent).pageX;
+    const clientY = 'clientY' in event ? event.clientY : (event as MouseEvent).pageY;
 
     const adjustedPosition = adjustPosition(clientX, clientY);
     

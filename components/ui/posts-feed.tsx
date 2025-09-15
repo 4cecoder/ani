@@ -63,7 +63,7 @@ export function PostsFeed({ currentUserId, className = "" }: PostsFeedProps) {
             <span className="text-white font-bold text-xs">📝</span>
           </div>
           <div>
-            <h2 className="font-semibold text-foreground">Hangout Feed</h2>
+            <h2 className="font-semibold text-foreground">Ani Posts</h2>
             <p className="text-xs text-muted-foreground">
               Share what's on your mind
             </p>

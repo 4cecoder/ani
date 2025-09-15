@@ -71,16 +71,21 @@ export const getPostsByTag = query({
   handler: async (ctx, args) => {
     const limit = args.limit || 20;
     
-    const posts = await ctx.db
+    // Get all posts and filter by tag since the index expects an array
+    const allPosts = await ctx.db
       .query("posts")
-      .withIndex("by_tags", (q) => q.eq("tags", args.tag))
       .filter((q) => q.eq(q.field("isPublic"), true))
       .order("desc")
-      .take(limit);
+      .collect();
+
+    // Filter posts that contain the tag
+    const filteredPosts = allPosts
+      .filter(post => post.tags.includes(args.tag))
+      .slice(0, limit);
 
     // Get author info for each post
     const postsWithAuthors = await Promise.all(
-      posts.map(async (post) => {
+      filteredPosts.map(async (post) => {
         const author = await ctx.db.get(post.authorId);
         return {
           ...post,

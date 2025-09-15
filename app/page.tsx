@@ -132,7 +132,7 @@ export default function Home() {
         {showPosts && (
           <DraggableWindow
             windowId="posts-feed"
-            title="📝 Hangout Feed"
+            title="📝 Ani Posts"
             width={500}
             height={700}
             onClose={() => setShowPosts(false)}
