@@ -29,24 +29,30 @@ export function useWindowPosition({
   minSize = { width: 300, height: 200 },
   maxSize = { width: 1200, height: 800 },
 }: UseWindowPositionOptions) {
-  const [position, setPosition] = useState<WindowPosition>(() => {
-    if (typeof window === "undefined") {
-      return {
-        x: defaultPosition.x,
-        y: defaultPosition.y,
-        width: defaultSize.width,
-        height: defaultSize.height,
-        isMaximized: false,
-        isMinimized: false,
-        zIndex: 100,
-      };
-    }
+  // Always start with default values to prevent hydration mismatch
+  const [position, setPosition] = useState<WindowPosition>({
+    x: defaultPosition.x,
+    y: defaultPosition.y,
+    width: defaultSize.width,
+    height: defaultSize.height,
+    isMaximized: false,
+    isMinimized: false,
+    zIndex: 100,
+  });
 
+  // Load from localStorage after hydration
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  // Hydration effect
+  useEffect(() => {
+    setIsHydrated(true);
+    
+    // Load position from localStorage after hydration
     try {
       const stored = localStorage.getItem(`${STORAGE_KEY_PREFIX}${windowId}`);
       if (stored) {
         const parsed = JSON.parse(stored);
-        return {
+        setPosition({
           x: parsed.x ?? defaultPosition.x,
           y: parsed.y ?? defaultPosition.y,
           width: parsed.width ?? defaultSize.width,
@@ -54,26 +60,26 @@ export function useWindowPosition({
           isMaximized: parsed.isMaximized ?? false,
           isMinimized: parsed.isMinimized ?? false,
           zIndex: parsed.zIndex ?? 100,
-        };
+        });
+      } else {
+        // Center window on first load if no saved position
+        const centerX = Math.max(20, window.innerWidth / 2 - defaultSize.width / 2);
+        const centerY = Math.max(80, window.innerHeight / 2 - defaultSize.height / 2);
+        
+        setPosition(prev => ({
+          ...prev,
+          x: centerX,
+          y: centerY,
+        }));
       }
     } catch (error) {
       console.warn(`Failed to load window position for ${windowId}:`, error);
     }
-
-    return {
-      x: defaultPosition.x,
-      y: defaultPosition.y,
-      width: defaultSize.width,
-      height: defaultSize.height,
-      isMaximized: false,
-      isMinimized: false,
-      zIndex: 100,
-    };
-  });
+  }, [windowId, defaultPosition, defaultSize]);
 
   // Save to localStorage whenever position changes
   const savePosition = useCallback((newPosition: Partial<WindowPosition>) => {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined" || !isHydrated) return;
 
     const updatedPosition = { ...position, ...newPosition };
     setPosition(updatedPosition);
@@ -86,7 +92,7 @@ export function useWindowPosition({
     } catch (error) {
       console.warn(`Failed to save window position for ${windowId}:`, error);
     }
-  }, [windowId, position]);
+  }, [windowId, position, isHydrated]);
 
   // Update position with validation
   const updatePosition = useCallback((updates: Partial<WindowPosition>) => {
@@ -138,21 +144,6 @@ export function useWindowPosition({
     return () => window.removeEventListener("resize", handleResize);
   }, [position, updatePosition]);
 
-  // Center window on first load if no saved position
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const hasStoredPosition = localStorage.getItem(`${STORAGE_KEY_PREFIX}${windowId}`);
-    if (!hasStoredPosition) {
-      const centerX = Math.max(20, window.innerWidth / 2 - defaultSize.width / 2);
-      const centerY = Math.max(80, window.innerHeight / 2 - defaultSize.height / 2);
-      
-      updatePosition({
-        x: centerX,
-        y: centerY,
-      });
-    }
-  }, [windowId, defaultSize, updatePosition]);
 
   return {
     position,
