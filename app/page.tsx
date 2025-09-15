@@ -181,12 +181,6 @@ export default function Home() {
         </SignedIn>
       </div>
 
-      {/* Footer */}
-      <div className="absolute bottom-0 left-0 right-0 p-6 text-center">
-        <p className="text-white/40 text-sm">
-          Built with ❤️ for bringing people together
-        </p>
-      </div>
     </div>
   );
 }
