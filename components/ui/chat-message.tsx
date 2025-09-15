@@ -1,5 +1,6 @@
-import { ReactNode } from 'react';
+import { ReactNode, useState } from 'react';
 import type { Id } from "@/convex/_generated/dataModel";
+import { ReactionContextMenu } from './reaction-context-menu';
 
 interface Reaction {
   emoji: string;
@@ -45,6 +46,8 @@ export function ChatMessage({
   readBy = [],
   deleted = false
 }: ChatMessageProps) {
+  const [contextMenuOpen, setContextMenuOpen] = useState(false);
+  const [contextMenuPosition, setContextMenuPosition] = useState({ x: 0, y: 0 });
   const formatTimestamp = (ts: string | Date) => {
     try {
       const date = typeof ts === 'string' ? new Date(ts) : ts;
@@ -111,18 +114,35 @@ export function ChatMessage({
     }
   };
 
+  const handleContextMenu = (event: React.MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    setContextMenuPosition({ x: event.clientX, y: event.clientY });
+    setContextMenuOpen(true);
+  };
+
+  const handleContextMenuClose = () => {
+    setContextMenuOpen(false);
+  };
+
   // Don't render deleted messages
   if (deleted) {
     return null;
   }
 
   return (
-    <div className={`
-      relative px-4 py-2
-      hover:bg-accent/5 transition-colors duration-200
-      group/message
-      ${isOwn ? 'flex justify-end' : 'flex justify-start'}
-    `}>
+    <>
+      <div 
+        className={`
+          relative px-4 py-2
+          hover:bg-accent/5 transition-colors duration-200
+          group/message cursor-context-menu
+          ${isOwn ? 'flex justify-end' : 'flex justify-start'}
+        `}
+        onContextMenu={handleContextMenu}
+        title="Right-click for reactions and actions"
+      >
       {/* Message Container - Groups avatar, header, and bubble together */}
       <div className={`
         flex gap-3 max-w-[85%]
@@ -212,58 +232,21 @@ export function ChatMessage({
             </div>
           )}
 
-          {/* Quick Reaction Bar (shows on hover) */}
-          <div className={`
-            opacity-0 group-hover/message:opacity-100
-            transition-opacity duration-200
-            absolute -top-1 z-10
-            flex gap-1
-            bg-background border border-border rounded-lg shadow-lg p-1
-            ${isOwn ? 'left-0' : 'right-0'}
-          `}>
-            {commonEmojis.map((emoji) => (
-              <button
-                key={emoji}
-                onClick={() => handleEmojiClick(emoji)}
-                className="
-                  w-6 h-6 flex items-center justify-center
-                  hover:bg-accent rounded text-sm
-                  transition-colors duration-150
-                "
-                title={`React with ${emoji}`}
-              >
-                {emoji}
-              </button>
-            ))}
-            {onReply && (
-              <button
-                onClick={() => onReply(messageId)}
-                className="
-                  w-6 h-6 flex items-center justify-center
-                  hover:bg-accent rounded text-xs
-                  transition-colors duration-150
-                "
-                title="Reply to message"
-              >
-                ↩️
-              </button>
-            )}
-            {isOwn && onDelete && (
-              <button
-                onClick={handleDelete}
-                className="
-                  w-6 h-6 flex items-center justify-center
-                  hover:bg-destructive/20 hover:text-destructive rounded text-xs
-                  transition-colors duration-150
-                "
-                title="Delete message"
-              >
-                🗑️
-              </button>
-            )}
-          </div>
         </div>
       </div>
-    </div>
+      </div>
+
+      {/* Reaction Context Menu */}
+      <ReactionContextMenu
+        messageId={messageId}
+        isOpen={contextMenuOpen}
+        position={contextMenuPosition}
+        onClose={handleContextMenuClose}
+        onReaction={onReaction || (() => {})}
+        onReply={onReply}
+        onDelete={onDelete}
+        isOwnMessage={isOwn}
+      />
+    </>
   );
 }

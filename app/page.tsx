@@ -53,7 +53,23 @@ export default function Home() {
           </div>
 
           <SignedOut>
-            <SignInButton mode="modal">
+            <SignInButton 
+              mode="modal"
+              appearance={{
+                elements: {
+                  modalContent: "backdrop-blur-xl bg-background/95 border border-border/50 shadow-2xl rounded-2xl",
+                  modalCloseButton: "text-muted-foreground hover:text-foreground",
+                  card: "bg-transparent shadow-none border-none",
+                  headerTitle: "text-foreground text-xl font-semibold",
+                  headerSubtitle: "text-muted-foreground",
+                  formButtonPrimary: "bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium rounded-lg transition-all duration-200 transform hover:scale-105",
+                  formFieldInput: "bg-muted border-border focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-lg transition-all duration-200",
+                  formFieldLabel: "text-foreground font-medium",
+                  footerActionLink: "text-primary hover:text-primary/80 transition-colors duration-200",
+                  socialButtonsBlockButton: "bg-muted border-border hover:bg-muted/80 text-foreground rounded-lg transition-all duration-200"
+                }
+              }}
+            >
               <button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 py-2.5 rounded-xl transition-all duration-200 text-sm font-medium shadow-lg transform hover:scale-105">
                 Join the Hangout
               </button>
@@ -64,8 +80,18 @@ export default function Home() {
             <UserButton
               appearance={{
                 elements: {
-                  avatarBox: "w-8 h-8 ring-2 ring-white/20 shadow-lg",
-                  userButtonPopoverCard: "backdrop-blur-xl bg-black/90 border border-white/20",
+                  avatarBox: "w-8 h-8 ring-2 ring-white/20 shadow-lg hover:ring-white/40 transition-all duration-200",
+                  userButtonPopoverCard: "backdrop-blur-xl bg-background/95 border border-border/50 shadow-2xl rounded-xl",
+                  userButtonPopoverMain: "bg-transparent",
+                  userButtonPopoverActionButton: "text-foreground hover:bg-muted rounded-lg transition-colors duration-200",
+                  userButtonPopoverActionButtonText: "text-foreground",
+                  userButtonPopoverActionButtonIcon: "text-muted-foreground",
+                  userButtonPopoverFooter: "border-t border-border/30",
+                  userButtonPopoverHeader: "border-b border-border/30",
+                  userButtonPopoverHeaderTitle: "text-foreground font-semibold",
+                  userButtonPopoverHeaderSubtitle: "text-muted-foreground",
+                  userButtonPopoverCardArrow: "fill-background/95",
+                  userButtonPopoverCardArrowBox: "fill-background/95"
                 }
               }}
             />
@@ -85,7 +111,23 @@ export default function Home() {
 
         <SignedOut>
           <div className="mt-8">
-            <SignInButton mode="modal">
+            <SignInButton 
+              mode="modal"
+              appearance={{
+                elements: {
+                  modalContent: "backdrop-blur-xl bg-background/95 border border-border/50 shadow-2xl rounded-2xl",
+                  modalCloseButton: "text-muted-foreground hover:text-foreground",
+                  card: "bg-transparent shadow-none border-none",
+                  headerTitle: "text-foreground text-xl font-semibold",
+                  headerSubtitle: "text-muted-foreground",
+                  formButtonPrimary: "bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium rounded-lg transition-all duration-200 transform hover:scale-105",
+                  formFieldInput: "bg-muted border-border focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-lg transition-all duration-200",
+                  formFieldLabel: "text-foreground font-medium",
+                  footerActionLink: "text-primary hover:text-primary/80 transition-colors duration-200",
+                  socialButtonsBlockButton: "bg-muted border-border hover:bg-muted/80 text-foreground rounded-lg transition-all duration-200"
+                }
+              }}
+            >
               <button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-4 rounded-2xl transition-all duration-300 text-lg font-semibold shadow-2xl transform hover:scale-105 flex items-center gap-3 mx-auto">
                 <MessageSquare className="w-6 h-6" />
                 Start Chatting Now
