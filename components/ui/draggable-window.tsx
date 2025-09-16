@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState, useEffect, useCallback } from "react";
+import React, { useRef, useState, useEffect, useCallback, useMemo } from "react";
 import { Maximize2, Minimize2, X, GripVertical } from "lucide-react";
 import { useWindowPosition } from "@/lib/hooks/useWindowPosition";
 
@@ -41,13 +41,19 @@ export function DraggableWindow({
   const [resizing, setResizing] = useState(false);
   const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, width: 0, height: 0 });
   
+  // Memoize default values to prevent unnecessary re-renders
+  const defaultPosition = useMemo(() => ({ x: 100, y: 100 }), []);
+  const defaultSize = useMemo(() => ({ width, height }), [width, height]);
+  const minSize = useMemo(() => ({ width: 300, height: 200 }), []);
+  const maxSize = useMemo(() => ({ width: 1200, height: 800 }), []);
+  
   // Use the window position hook
   const { position, updatePosition } = useWindowPosition({
     windowId,
-    defaultPosition: { x: 100, y: 100 },
-    defaultSize: { width, height },
-    minSize: { width: 300, height: 200 },
-    maxSize: { width: 1200, height: 800 },
+    defaultPosition,
+    defaultSize,
+    minSize,
+    maxSize,
   });
 
   // Bring window to front when clicked

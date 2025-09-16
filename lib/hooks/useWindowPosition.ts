@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 
 interface WindowPosition {
   x: number;
@@ -29,12 +29,16 @@ export function useWindowPosition({
   minSize = { width: 300, height: 200 },
   maxSize = { width: 1200, height: 800 },
 }: UseWindowPositionOptions) {
+  // Memoize default values to prevent unnecessary re-renders
+  const memoizedDefaultPosition = useMemo(() => defaultPosition, [defaultPosition.x, defaultPosition.y]);
+  const memoizedDefaultSize = useMemo(() => defaultSize, [defaultSize.width, defaultSize.height]);
+
   // Always start with default values to prevent hydration mismatch
   const [position, setPosition] = useState<WindowPosition>({
-    x: defaultPosition.x,
-    y: defaultPosition.y,
-    width: defaultSize.width,
-    height: defaultSize.height,
+    x: memoizedDefaultPosition.x,
+    y: memoizedDefaultPosition.y,
+    width: memoizedDefaultSize.width,
+    height: memoizedDefaultSize.height,
     isMaximized: false,
     isMinimized: false,
     zIndex: 100,
@@ -43,7 +47,7 @@ export function useWindowPosition({
   // Load from localStorage after hydration
   const [isHydrated, setIsHydrated] = useState(false);
 
-  // Hydration effect
+  // Hydration effect - only run once when component mounts
   useEffect(() => {
     setIsHydrated(true);
     
@@ -53,18 +57,18 @@ export function useWindowPosition({
       if (stored) {
         const parsed = JSON.parse(stored);
         setPosition({
-          x: parsed.x ?? defaultPosition.x,
-          y: parsed.y ?? defaultPosition.y,
-          width: parsed.width ?? defaultSize.width,
-          height: parsed.height ?? defaultSize.height,
+          x: parsed.x ?? memoizedDefaultPosition.x,
+          y: parsed.y ?? memoizedDefaultPosition.y,
+          width: parsed.width ?? memoizedDefaultSize.width,
+          height: parsed.height ?? memoizedDefaultSize.height,
           isMaximized: parsed.isMaximized ?? false,
           isMinimized: parsed.isMinimized ?? false,
           zIndex: parsed.zIndex ?? 100,
         });
       } else {
         // Center window on first load if no saved position
-        const centerX = Math.max(20, window.innerWidth / 2 - defaultSize.width / 2);
-        const centerY = Math.max(80, window.innerHeight / 2 - defaultSize.height / 2);
+        const centerX = Math.max(20, window.innerWidth / 2 - memoizedDefaultSize.width / 2);
+        const centerY = Math.max(80, window.innerHeight / 2 - memoizedDefaultSize.height / 2);
         
         setPosition(prev => ({
           ...prev,
@@ -75,7 +79,7 @@ export function useWindowPosition({
     } catch (error) {
       console.warn(`Failed to load window position for ${windowId}:`, error);
     }
-  }, [windowId, defaultPosition, defaultSize]);
+  }, [windowId, memoizedDefaultPosition.x, memoizedDefaultPosition.y, memoizedDefaultSize.width, memoizedDefaultSize.height]);
 
   // Save to localStorage whenever position changes
   const savePosition = useCallback((newPosition: Partial<WindowPosition>) => {

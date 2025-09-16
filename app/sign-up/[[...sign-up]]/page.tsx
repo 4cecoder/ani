@@ -12,18 +12,17 @@ export default function SignUpPage() {
       </div>
 
       <div className="relative z-10 flex items-center justify-center min-h-screen p-4">
-        <div className="bg-background/95 backdrop-blur-xl border border-border/50 rounded-2xl shadow-2xl p-8 max-w-md w-full">
+        <div className="bg-black/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl p-8 max-w-md w-full">
           <div className="text-center mb-6">
             <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4">
               <span className="text-white font-bold text-2xl">🎉</span>
             </div>
-            <h1 className="text-2xl font-bold text-foreground mb-2">Join the Waitlist</h1>
-            <p className="text-muted-foreground">Get early access to Ani when we launch</p>
+            <h1 className="text-2xl font-bold text-white mb-2">Join the Waitlist</h1>
+            <p className="text-gray-300">Get early access to Ani when we launch</p>
           </div>
           
-           <Waitlist
-             appearance={{
-               baseTheme: "dark",
+          <Waitlist
+            appearance={{
               variables: {
                 colorPrimary: "#8b5cf6",
                 colorBackground: "transparent",
