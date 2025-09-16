@@ -1,4 +1,4 @@
-import { SignUp } from "@clerk/nextjs";
+import { Waitlist } from "@clerk/nextjs";
 
 export default function SignUpPage() {
   return (
@@ -17,11 +17,11 @@ export default function SignUpPage() {
             <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4">
               <span className="text-white font-bold text-2xl">🎉</span>
             </div>
-            <h1 className="text-2xl font-bold text-foreground mb-2">Join Ani</h1>
-            <p className="text-muted-foreground">Create your account to start hanging out</p>
+            <h1 className="text-2xl font-bold text-foreground mb-2">Join the Waitlist</h1>
+            <p className="text-muted-foreground">Get early access to Ani when we launch</p>
           </div>
           
-          <SignUp
+          <Waitlist
             appearance={{
               baseTheme: undefined,
               variables: {
