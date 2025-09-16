@@ -14,7 +14,7 @@ interface Post {
     _id: Id<"users">;
     username: string;
     avatar?: string;
-  };
+  } | null;
   type: string;
   metadata?: {
     imageUrls?: string[];

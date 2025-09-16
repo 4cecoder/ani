@@ -10,7 +10,7 @@ export function useHangout() {
   const { user, isLoaded } = useUser();
   const [currentUserId, setCurrentUserId] = useState<Id<"users"> | null>(null);
   const [isTyping, setIsTyping] = useState(false);
-  const typingTimeoutRef = useRef<NodeJS.Timeout>();
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Convex mutations and queries
   const createOrGetUser = useMutation(api.hangout.createOrGetUser);

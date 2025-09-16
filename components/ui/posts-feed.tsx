@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { PostCard } from "./post-card";
@@ -65,7 +65,7 @@ export function PostsFeed({ currentUserId, className = "" }: PostsFeedProps) {
           <div>
             <h2 className="font-semibold text-foreground">Ani Posts</h2>
             <p className="text-xs text-muted-foreground">
-              Share what's on your mind
+              Share what&apos;s on your mind
             </p>
           </div>
         </div>
@@ -122,7 +122,7 @@ export function PostsFeed({ currentUserId, className = "" }: PostsFeedProps) {
             <PostComposer
               currentUserId={currentUserId}
               onPostCreated={handlePostCreated}
-              placeholder="What's happening in the hangout?"
+              placeholder="What&apos;s happening in the hangout?"
             />
           </div>
         )}
