@@ -15,6 +15,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
       appearance={{
         baseTheme: dark,
       }}
+      signInUrl="/sign-in"
+      signUpUrl="/sign-up"
+      afterSignInUrl="/"
+      afterSignUpUrl="/"
     >
       <ConvexProvider client={convex}>
         {children}

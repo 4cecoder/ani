@@ -1,4 +1,5 @@
 import { SignIn } from "@clerk/nextjs";
+import { Suspense } from "react";
 
 export default function SignInPage() {
   return (
@@ -22,8 +23,13 @@ export default function SignInPage() {
           </div>
           
           <div className="flex justify-center">
-            <SignIn
-            appearance={{
+            <Suspense fallback={
+              <div className="flex items-center justify-center p-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
+              </div>
+            }>
+              <SignIn
+              appearance={{
               variables: {
                 colorPrimary: "#8b5cf6",
                 colorBackground: "#1f2937",
@@ -57,6 +63,7 @@ export default function SignInPage() {
               }
             }}
           />
+            </Suspense>
           </div>
         </div>
       </div>
