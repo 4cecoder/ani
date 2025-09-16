@@ -21,9 +21,9 @@ export default function SignInPage() {
             <p className="text-muted-foreground">Sign in to join the hangout</p>
           </div>
           
-          <SignIn
-            appearance={{
-              baseTheme: undefined,
+           <SignIn
+             appearance={{
+               baseTheme: "dark",
               variables: {
                 colorPrimary: "#8b5cf6",
                 colorBackground: "transparent",

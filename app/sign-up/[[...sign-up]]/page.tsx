@@ -21,9 +21,9 @@ export default function SignUpPage() {
             <p className="text-muted-foreground">Get early access to Ani when we launch</p>
           </div>
           
-          <Waitlist
-            appearance={{
-              baseTheme: undefined,
+           <Waitlist
+             appearance={{
+               baseTheme: "dark",
               variables: {
                 colorPrimary: "#8b5cf6",
                 colorBackground: "transparent",
