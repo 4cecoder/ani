@@ -144,14 +144,14 @@ export function useHangout() {
     }
   };
 
-  const addMessageReaction = async (messageId: Id<"messages">, emoji: string) => {
+  const addMessageReaction = async (messageId: Id<"messages">, reactionKey: string) => {
     if (!currentUserId) return;
 
     try {
       await addReaction({
         messageId,
         userId: currentUserId,
-        emoji,
+        reactionKey,
       });
     } catch (error) {
       console.error("Failed to add reaction:", error);

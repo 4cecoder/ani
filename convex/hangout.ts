@@ -300,7 +300,7 @@ export const addReaction = mutation({
   args: {
     messageId: v.id("messages"),
     userId: v.id("users"),
-    emoji: v.string(),
+    reactionKey: v.string(),
   },
   handler: async (ctx, args) => {
     const message = await ctx.db.get(args.messageId);
@@ -309,7 +309,7 @@ export const addReaction = mutation({
     }
 
     const reactions = message.reactions || [];
-    const existingReactionIndex = reactions.findIndex(r => r.emoji === args.emoji);
+    const existingReactionIndex = reactions.findIndex(r => r.reactionKey === args.reactionKey);
 
     if (existingReactionIndex >= 0) {
       const reaction = reactions[existingReactionIndex];
@@ -330,7 +330,7 @@ export const addReaction = mutation({
     } else {
       // Add new reaction
       reactions.push({
-        emoji: args.emoji,
+        reactionKey: args.reactionKey,
         users: [args.userId],
         count: 1,
       });

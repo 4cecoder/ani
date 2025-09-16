@@ -4,11 +4,21 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
+    "dev:posts": "next dev --turbopack --experimental-app-only",
     "build": "next build --turbopack",
+    "build:posts": "next build --turbopack --experimental-app-only",
     "start": "next start",
     "lint": "eslint",
+    "lint:posts": "eslint components/ui/post-*.tsx convex/posts.ts --fix",
+    "type-check": "tsc --noEmit",
+    "type-check:posts": "tsc --noEmit --project tsconfig.posts.json",
     "convex:dev": "convex dev",
-    "convex:deploy": "convex deploy"
+    "convex:deploy": "convex deploy",
+    "posts:watch": "nodemon --watch components/ui/post-*.tsx --watch convex/posts.ts --exec 'npm run lint:posts && npm run type-check:posts'",
+    "posts:test": "echo 'Posts testing framework - implement with Jest/Vitest'",
+    "posts:analyze": "ANALYZE=true next build --config next.posts.config.js",
+    "dev:fast": "NODE_OPTIONS='--max-old-space-size=4096' next dev --turbopack",
+    "clean": "rm -rf .next && rm -rf node_modules/.cache"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.32.0",

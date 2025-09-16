@@ -46,7 +46,7 @@ export default defineSchema({
       replyTo: v.optional(v.id("messages")),
     })),
     reactions: v.optional(v.array(v.object({
-      emoji: v.string(),
+      reactionKey: v.string(),
       users: v.array(v.id("users")),
       count: v.number(),
     }))),

@@ -2,19 +2,44 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import type { Id } from "@/convex/_generated/dataModel";
+import {
+  ThumbsUpIcon,
+  HeartIcon,
+  LaughingIcon,
+  SurprisedIcon,
+  CryingIcon,
+  AngryIcon,
+  PartyIcon,
+  FireIcon,
+  OneHundredIcon,
+  ClapIcon,
+  ReplyIcon,
+  TrashIcon
+} from "./icons";
 
 interface ReactionContextMenuProps {
   messageId: Id<"messages">;
   isOpen: boolean;
   position: { x: number; y: number };
   onClose: () => void;
-  onReaction: (messageId: Id<"messages">, emoji: string) => void;
+  onReaction: (messageId: Id<"messages">, reactionKey: string) => void;
   onReply?: (messageId: Id<"messages">) => void;
   onDelete?: (messageId: Id<"messages">) => void;
   isOwnMessage?: boolean;
 }
 
-const COMMON_EMOJIS = ['👍', '❤️', '😂', '😮', '😢', '😠', '🎉', '🔥', '💯', '👏'];
+const COMMON_REACTIONS = [
+  { icon: ThumbsUpIcon, label: 'thumbs up', key: 'thumbs-up' },
+  { icon: HeartIcon, label: 'heart', key: 'heart' },
+  { icon: LaughingIcon, label: 'laughing', key: 'laughing' },
+  { icon: SurprisedIcon, label: 'surprised', key: 'surprised' },
+  { icon: CryingIcon, label: 'crying', key: 'crying' },
+  { icon: AngryIcon, label: 'angry', key: 'angry' },
+  { icon: PartyIcon, label: 'party', key: 'party' },
+  { icon: FireIcon, label: 'fire', key: 'fire' },
+  { icon: OneHundredIcon, label: '100', key: '100' },
+  { icon: ClapIcon, label: 'clap', key: 'clap' }
+];
 
 export function ReactionContextMenu({
   messageId,
@@ -31,33 +56,34 @@ export function ReactionContextMenu({
 
   // Calculate optimal position to keep menu in viewport
   const calculatePosition = useCallback((x: number, y: number) => {
-    if (!menuRef.current) return { x, y };
-
-    const menuRect = menuRef.current.getBoundingClientRect();
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
     const margin = 10;
+    
+    // Use estimated menu dimensions since we can't get actual dimensions yet
+    const estimatedMenuWidth = 200; // min-w-[200px] from className
+    const estimatedMenuHeight = 120; // Approximate height for the menu
 
     let adjustedX = x;
     let adjustedY = y;
 
     // Adjust horizontal position
-    if (x + menuRect.width + margin > viewportWidth) {
-      adjustedX = Math.max(margin, x - menuRect.width);
+    if (x + estimatedMenuWidth + margin > viewportWidth) {
+      adjustedX = Math.max(margin, x - estimatedMenuWidth);
     }
 
     // Adjust vertical position - prefer above the message
-    if (y - menuRect.height - margin < 0) {
+    if (y - estimatedMenuHeight - margin < 0) {
       // If not enough space above, position below
       adjustedY = y + margin;
     } else {
       // Position above the message
-      adjustedY = y - menuRect.height - margin;
+      adjustedY = y - estimatedMenuHeight - margin;
     }
 
     // Final check to ensure it's within viewport
-    if (adjustedY + menuRect.height > viewportHeight) {
-      adjustedY = Math.max(margin, viewportHeight - menuRect.height - margin);
+    if (adjustedY + estimatedMenuHeight > viewportHeight) {
+      adjustedY = Math.max(margin, viewportHeight - estimatedMenuHeight - margin);
     }
 
     return { x: adjustedX, y: adjustedY };
@@ -65,11 +91,52 @@ export function ReactionContextMenu({
 
   // Update position when menu opens or position changes
   useEffect(() => {
-    if (isOpen && menuRef.current) {
+    if (isOpen) {
+      console.log('Context menu opening at position:', position); // Debug log
       const newPosition = calculatePosition(position.x, position.y);
+      console.log('Adjusted position:', newPosition); // Debug log
       setAdjustedPosition(newPosition);
     }
   }, [isOpen, position, calculatePosition]);
+
+  // Fine-tune position after menu is rendered
+  useEffect(() => {
+    if (isOpen && menuRef.current) {
+      const menuRect = menuRef.current.getBoundingClientRect();
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      const margin = 10;
+
+      let needsAdjustment = false;
+      let newX = adjustedPosition.x;
+      let newY = adjustedPosition.y;
+
+      // Check if menu is outside viewport and adjust
+      if (menuRect.right > viewportWidth - margin) {
+        newX = Math.max(margin, viewportWidth - menuRect.width - margin);
+        needsAdjustment = true;
+      }
+      
+      if (menuRect.left < margin) {
+        newX = margin;
+        needsAdjustment = true;
+      }
+
+      if (menuRect.bottom > viewportHeight - margin) {
+        newY = Math.max(margin, viewportHeight - menuRect.height - margin);
+        needsAdjustment = true;
+      }
+
+      if (menuRect.top < margin) {
+        newY = margin;
+        needsAdjustment = true;
+      }
+
+      if (needsAdjustment) {
+        setAdjustedPosition({ x: newX, y: newY });
+      }
+    }
+  }, [isOpen, adjustedPosition.x, adjustedPosition.y]);
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -113,8 +180,9 @@ export function ReactionContextMenu({
     };
   }, [isOpen, onClose]);
 
-  const handleReaction = (emoji: string) => {
-    onReaction(messageId, emoji);
+  const handleReaction = (reactionKey: string) => {
+    console.log('handleReaction called with:', reactionKey); // Debug log
+    onReaction(messageId, reactionKey);
     onClose();
   };
 
@@ -132,64 +200,72 @@ export function ReactionContextMenu({
     }
   };
 
-  if (!isOpen) return null;
+  if (!isOpen) {
+    console.log('Context menu not open, not rendering'); // Debug log
+    return null;
+  }
+
+  console.log('Rendering context menu at:', adjustedPosition); // Debug log
 
   return (
     <div
       ref={menuRef}
-      className="fixed z-50 bg-background border border-border rounded-lg shadow-lg p-2 min-w-[200px] animate-in fade-in-0 zoom-in-95 duration-200"
+      className="fixed z-[9999] bg-background/95 backdrop-blur-sm border border-border/60 rounded-xl shadow-xl p-3 min-w-[200px] animate-slide-up"
       style={{
         left: adjustedPosition.x,
         top: adjustedPosition.y,
+        transform: 'translateY(-4px)',
       }}
     >
-      {/* Reaction Emojis */}
-      <div className="grid grid-cols-5 gap-1 mb-2">
-        {COMMON_EMOJIS.map((emoji) => (
-          <button
-            key={emoji}
-            onClick={() => handleReaction(emoji)}
-            className="
-              w-8 h-8 flex items-center justify-center
-              hover:bg-accent hover:scale-110 rounded text-lg
-              transition-all duration-150
-              focus:outline-none focus:ring-2 focus:ring-accent/50
-              active:scale-95
-            "
-            title={`React with ${emoji}`}
-          >
-            {emoji}
-          </button>
-        ))}
+      {/* Reaction Icons */}
+      <div className="grid grid-cols-5 gap-2 mb-3">
+        {COMMON_REACTIONS.map((reaction) => {
+          const IconComponent = reaction.icon;
+          return (
+            <button
+              key={reaction.key}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Reaction clicked:', reaction.key); // Debug log
+                handleReaction(reaction.key);
+              }}
+              className="w-9 h-9 flex items-center justify-center hover:bg-primary/10 hover:scale-110 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30 active:scale-95 group"
+              title={`React with ${reaction.label}`}
+              aria-label={`React with ${reaction.label}`}
+            >
+              <IconComponent size={18} className="group-hover:scale-110 transition-transform duration-200" />
+            </button>
+          );
+        })}
       </div>
 
       {/* Action Buttons */}
-      <div className="border-t border-border pt-2 space-y-1">
+      <div className="border-t border-border/40 pt-3 space-y-2">
         {onReply && (
           <button
-            onClick={handleReply}
-            className="
-              w-full flex items-center gap-2 px-3 py-2 text-sm
-              hover:bg-accent rounded transition-colors duration-150
-              focus:outline-none focus:ring-2 focus:ring-accent/50
-            "
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleReply();
+            }}
+            className="w-full flex items-center gap-3 px-3 py-2.5 text-sm hover:bg-accent/60 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30 font-medium"
           >
-            <span>↩️</span>
+            <ReplyIcon size={14} className="text-blue-500" />
             <span>Reply</span>
           </button>
         )}
-        
+
         {isOwnMessage && onDelete && (
           <button
-            onClick={handleDelete}
-            className="
-              w-full flex items-center gap-2 px-3 py-2 text-sm
-              hover:bg-destructive/20 hover:text-destructive rounded
-              transition-colors duration-150
-              focus:outline-none focus:ring-2 focus:ring-destructive/50
-            "
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleDelete();
+            }}
+            className="w-full flex items-center gap-3 px-3 py-2.5 text-sm hover:bg-red-50 hover:text-red-600 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-200 font-medium"
           >
-            <span>🗑️</span>
+            <TrashIcon size={14} className="text-red-500" />
             <span>Delete</span>
           </button>
         )}

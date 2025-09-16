@@ -7,6 +7,7 @@ import { OnlineUsers } from "@/components/ui/online-users";
 import { PostsFeed } from "@/components/ui/posts-feed";
 import { useState } from "react";
 import { MessageSquare, Users, Sparkles, UserPlus, FileText } from "lucide-react";
+// Icons are available but not used in window titles (string only)
 import { useHangout } from "@/lib/hooks/useHangout";
 
 export default function Home() {
@@ -102,7 +103,7 @@ export default function Home() {
       {/* Welcome Message */}
       <div className="relative z-10 text-center mt-12 mb-8 px-4">
         <h2 className="text-4xl md:text-6xl font-bold text-white mb-4 bg-gradient-to-r from-white via-purple-200 to-pink-200 bg-clip-text text-transparent">
-          Welcome to the Hangout! 🎉
+          Welcome to the Hangout!
         </h2>
         <p className="text-white/70 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed">
           Join our giant community chat where everyone hangs out together.
@@ -141,7 +142,7 @@ export default function Home() {
       {showChat && (
         <DraggableWindow
           windowId="main-hangout-chat"
-          title="🎉 Main Hangout"
+          title="Main Hangout"
           width={450}
           height={600}
           onClose={() => setShowChat(false)}
@@ -156,7 +157,7 @@ export default function Home() {
         {showUsers && (
           <DraggableWindow
             windowId="online-users"
-            title="👥 Who's Online"
+            title="Who's Online"
             width={280}
             height={400}
             onClose={() => setShowUsers(false)}
@@ -174,7 +175,7 @@ export default function Home() {
         {showPosts && (
           <DraggableWindow
             windowId="posts-feed"
-            title="📝 Ani Posts"
+            title="Ani Posts"
             width={500}
             height={700}
             onClose={() => setShowPosts(false)}

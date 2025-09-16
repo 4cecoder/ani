@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { Send, Users, Circle, Reply } from "lucide-react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { Send, Users, Circle, Reply, MessageCircle, Hand, Search, Settings, Smile, Paperclip, Mic, MicOff, Volume2, VolumeX } from "lucide-react";
+import { PartyIcon } from "./icons";
 import Image from "next/image";
 import { ChatMessage } from "./chat-message";
 import { TypingIndicator } from "./typing-indicator";
@@ -16,6 +17,11 @@ export function HangoutChat() {
     username: string;
     content: string;
   } | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showSearch, setShowSearch] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const [showEmoji, setShowEmoji] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -58,6 +64,24 @@ export function HangoutChat() {
     setMessage(e.target.value);
     handleTyping();
   };
+
+  const insertEmoji = useCallback((emoji: string) => {
+    if (!inputRef.current) return;
+
+    const input = inputRef.current;
+    const start = input.selectionStart || 0;
+    const end = input.selectionEnd || 0;
+    const newMessage = message.slice(0, start) + emoji + message.slice(end);
+
+    setMessage(newMessage);
+    setShowEmoji(false);
+
+    // Focus back and set cursor position
+    setTimeout(() => {
+      input.focus();
+      input.setSelectionRange(start + emoji.length, start + emoji.length);
+    }, 0);
+  }, [message]);
 
   const handleReply = (messageId: Id<"messages">, username: string, content: string) => {
     setReplyingTo({ messageId, username, content });
@@ -133,7 +157,7 @@ export function HangoutChat() {
       <div className="flex items-center justify-between p-4 border-b border-border/30 bg-muted/20">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-            <span className="text-white font-bold text-xs">🎉</span>
+            <PartyIcon size={12} className="text-white" />
           </div>
           <div>
             <h2 className="font-semibold text-foreground">Main Hangout</h2>
@@ -157,9 +181,9 @@ export function HangoutChat() {
       <div className="flex-1 overflow-y-auto scroll-smooth">
         <SignedOut>
           <div className="flex flex-col items-center justify-center h-full p-6 text-center">
-            <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mb-4">
-              <span className="text-white font-bold text-xl">👋</span>
-            </div>
+             <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mb-4">
+               <Hand size={24} className="text-white" />
+             </div>
             <h3 className="text-lg font-semibold text-foreground mb-2">
               Welcome to the Main Hangout!
             </h3>
@@ -184,9 +208,9 @@ export function HangoutChat() {
             </div>
           ) : messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full p-6 text-center">
-              <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mb-4">
-                <span className="text-white font-bold text-xl">💬</span>
-              </div>
+             <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mb-4">
+               <MessageCircle size={24} className="text-white" />
+             </div>
               <h3 className="text-lg font-semibold text-foreground mb-2">
                 Start the conversation!
               </h3>
