@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 
 interface TypingUser {
   _id: string;
@@ -66,9 +67,11 @@ export function TypingIndicator({ typingUsers }: TypingIndicatorProps) {
             title={user.username}
           >
             {user.avatar ? (
-              <img
+              <Image
                 src={user.avatar}
                 alt={user.username}
+                width={24}
+                height={24}
                 className="w-full h-full object-cover"
               />
             ) : (

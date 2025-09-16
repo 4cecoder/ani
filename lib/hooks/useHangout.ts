@@ -158,7 +158,7 @@ export function useHangout() {
     }
   };
 
-  const markAsRead = async (messageId: Id<"messages">) => {
+  const markAsRead = useCallback(async (messageId: Id<"messages">) => {
     if (!currentUserId) return;
 
     try {
@@ -169,7 +169,7 @@ export function useHangout() {
     } catch (error) {
       console.error("Failed to mark message as read:", error);
     }
-  };
+  }, [currentUserId, markMessageAsRead]);
 
   const deleteMessageById = async (messageId: Id<"messages">) => {
     if (!currentUserId) return;
@@ -196,7 +196,7 @@ export function useHangout() {
         markAsRead(msg._id);
       });
     }
-  }, [messages, currentUserId]);
+  }, [messages, currentUserId, markAsRead]);
 
   // Cleanup typing timeout on unmount
   useEffect(() => {

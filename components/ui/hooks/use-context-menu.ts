@@ -40,13 +40,17 @@ export function useContextMenu(options: UseContextMenuOptions): UseContextMenuRe
         triggerRef.current &&
         !triggerRef.current.contains(event.target as Node)
       ) {
-        close();
+        setIsOpen(false);
+        setActiveItem(null);
+        onClose?.();
       }
     };
 
     const handleEscapeKey = (event: KeyboardEvent) => {
       if (isOpen && event.key === 'Escape') {
-        close();
+        setIsOpen(false);
+        setActiveItem(null);
+        onClose?.();
       }
     };
 
@@ -59,13 +63,15 @@ export function useContextMenu(options: UseContextMenuOptions): UseContextMenuRe
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('keydown', handleEscapeKey);
     };
-  }, [isOpen]);
+  }, [isOpen, onClose]);
 
   // Close menu when scrolling
   useEffect(() => {
     const handleScroll = () => {
       if (isOpen) {
-        close();
+        setIsOpen(false);
+        setActiveItem(null);
+        onClose?.();
       }
     };
 
@@ -76,9 +82,17 @@ export function useContextMenu(options: UseContextMenuOptions): UseContextMenuRe
     return () => {
       window.removeEventListener('scroll', handleScroll, true);
     };
-  }, [isOpen]);
+  }, [isOpen, onClose]);
 
   // Adjust position to keep menu in viewport
+  // Event emitter for debugging and external handling
+  const emitEvent = useCallback((event: ContextMenuEvent) => {
+    // For now, just log to console for debugging
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`ContextMenu Event [${id}]:`, event);
+    }
+  }, [id]);
+
   const adjustPosition = useCallback((x: number, y: number) => {
     if (!menuRef.current) return { x, y };
 
@@ -126,7 +140,7 @@ export function useContextMenu(options: UseContextMenuOptions): UseContextMenuRe
       timestamp: Date.now(),
     };
     emitEvent(menuEvent);
-  }, [disabled, adjustPosition, onOpen]);
+  }, [disabled, adjustPosition, onOpen, emitEvent]);
 
   const close = useCallback(() => {
     setIsOpen(false);
@@ -139,7 +153,7 @@ export function useContextMenu(options: UseContextMenuOptions): UseContextMenuRe
       timestamp: Date.now(),
     };
     emitEvent(menuEvent);
-  }, [onClose]);
+  }, [onClose, emitEvent]);
 
   const toggle = useCallback((event: React.MouseEvent | MouseEvent) => {
     if (isOpen) {
@@ -181,14 +195,6 @@ export function useContextMenu(options: UseContextMenuOptions): UseContextMenuRe
   const setItemsCallback = useCallback((newItems: ContextMenuItem[] | ContextMenuGroup[]) => {
     setItems(newItems);
   }, []);
-
-  // Event emitter for debugging and external handling
-  const emitEvent = useCallback((event: ContextMenuEvent) => {
-    // For now, just log to console for debugging
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`ContextMenu Event [${id}]:`, event);
-    }
-  }, [id]);
 
   // Keyboard navigation
   const handleKeyDown = useCallback((event: KeyboardEvent) => {

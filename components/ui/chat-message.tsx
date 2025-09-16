@@ -100,17 +100,9 @@ export function ChatMessage({
     );
   };
 
-  const commonEmojis = ['👍', '❤️', '😂', '😮', '😢', '😠'];
-
   const handleEmojiClick = (emoji: string) => {
     if (onReaction) {
       onReaction(messageId, emoji);
-    }
-  };
-
-  const handleDelete = () => {
-    if (onDelete) {
-      onDelete(messageId);
     }
   };
 

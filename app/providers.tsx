@@ -9,7 +9,7 @@ const convex = new ConvexReactClient(convexUrl);
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <ClerkProvider>
+    <ClerkProvider publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}>
       <ConvexProvider client={convex}>
         {children}
       </ConvexProvider>

@@ -76,7 +76,7 @@ export function DraggableWindow({
     document.body.style.cursor = "";
   };
 
-  const handleMouseMove = (e: MouseEvent) => {
+  const handleMouseMove = useCallback((e: MouseEvent) => {
     if (dragging && !position.isMaximized) {
       let newX = e.clientX - offset.x;
       let newY = e.clientY - offset.y;
@@ -105,7 +105,7 @@ export function DraggableWindow({
       const newHeight = Math.max(200, resizeStart.height + (e.clientY - resizeStart.y));
       updatePosition({ width: newWidth, height: newHeight });
     }
-  };
+  }, [dragging, position.isMaximized, position.width, position.height, offset.x, offset.y, snapToEdges, updatePosition, resizing, resizable, resizeStart.width, resizeStart.height, resizeStart.x, resizeStart.y]);
 
   const handleResizeStart = (e: React.MouseEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -196,7 +196,7 @@ export function DraggableWindow({
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mouseup", handleMouseUp);
     };
-  }, [dragging, resizing, offset, resizeStart]);
+  }, [dragging, resizing, handleMouseMove, updatePosition]);
 
   return (
     <div

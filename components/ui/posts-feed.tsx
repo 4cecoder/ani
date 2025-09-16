@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery, useMutation } from "convex/react";
+import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { PostCard } from "./post-card";
 import { PostComposer } from "./post-composer";
-import { TrendingUp, Hash, Users, RefreshCw } from "lucide-react";
+import { TrendingUp, Hash, RefreshCw } from "lucide-react";
 import type { Id } from "@/convex/_generated/dataModel";
 
 interface PostsFeedProps {
@@ -21,37 +21,18 @@ export function PostsFeed({ currentUserId, className = "" }: PostsFeedProps) {
   const posts = useQuery(api.posts.getPosts, { limit: 20 });
   const trendingTags = useQuery(api.posts.getTrendingTags, { limit: 10 });
   
-  // Mutations
-  const deletePost = useMutation(api.posts.deletePost);
-
   const handleRefresh = async () => {
     setIsRefreshing(true);
     // The query will automatically refetch
     setTimeout(() => setIsRefreshing(false), 1000);
   };
 
-  const handlePostDeleted = (postId: Id<"posts">) => {
+  const handlePostDeleted = () => {
     // The query will automatically update
   };
 
   const handlePostCreated = () => {
     // The query will automatically update
-  };
-
-  const formatTimestamp = (timestamp: number) => {
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-    
-    if (diffMins < 1) return 'just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
-    
-    return date.toLocaleDateString();
   };
 
   return (

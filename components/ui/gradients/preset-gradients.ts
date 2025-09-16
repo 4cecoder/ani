@@ -1,4 +1,4 @@
-import { GradientConfig, GradientTheme, GradientPreset } from './gradient-types';
+import { GradientTheme, GradientPreset } from './gradient-types';
 
 /**
  * Predefined gradient presets that match the app's purple/blue theme

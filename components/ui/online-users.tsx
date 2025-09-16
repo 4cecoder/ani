@@ -2,6 +2,7 @@
 
 import { useHangout } from "@/lib/hooks/useHangout";
 import { Circle, Users } from "lucide-react";
+import Image from "next/image";
 
 export function OnlineUsers() {
   const { onlineUsers, isConnected } = useHangout();
@@ -9,9 +10,11 @@ export function OnlineUsers() {
   const getAvatarComponent = (username: string, avatar?: string) => {
     if (avatar) {
       return (
-        <img
+        <Image
           src={avatar}
           alt={username}
+          width={32}
+          height={32}
           className="w-full h-full object-cover rounded-full"
         />
       );

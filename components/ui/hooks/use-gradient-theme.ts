@@ -49,7 +49,7 @@ export function useGradientTheme(initialPreset?: GradientPreset): GradientContex
 
   const generateCSS = useCallback((gradient: typeof currentTheme.primary) => {
     return generateGradientCSS(gradient);
-  }, []);
+  }, [currentTheme]);
 
   // Apply theme CSS variables to document root
   useEffect(() => {

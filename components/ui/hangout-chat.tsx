@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Send, Users, Circle, Reply } from "lucide-react";
+import Image from "next/image";
 import { ChatMessage } from "./chat-message";
 import { TypingIndicator } from "./typing-indicator";
 import { useHangout } from "@/lib/hooks/useHangout";
@@ -88,9 +89,11 @@ export function HangoutChat() {
   const getAvatarComponent = (username: string, avatar?: string) => {
     if (avatar) {
       return (
-        <img
+        <Image
           src={avatar}
           alt={username}
+          width={40}
+          height={40}
           className="w-full h-full object-cover rounded-full"
         />
       );

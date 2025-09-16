@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Heart, MessageCircle, Share, MoreHorizontal, Trash2, Edit3 } from "lucide-react";
+import Image from "next/image";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
@@ -96,9 +97,11 @@ export function PostCard({ post, currentUserId, onEdit, onDelete }: PostCardProp
   const getAvatarComponent = (username: string, avatar?: string) => {
     if (avatar) {
       return (
-        <img
+        <Image
           src={avatar}
           alt={username}
+          width={40}
+          height={40}
           className="w-10 h-10 object-cover rounded-full"
         />
       );
@@ -214,10 +217,12 @@ export function PostCard({ post, currentUserId, onEdit, onDelete }: PostCardProp
         {post.metadata?.imageUrls && post.metadata.imageUrls.length > 0 && (
           <div className="mt-3 grid gap-2">
             {post.metadata.imageUrls.slice(0, 4).map((url, index) => (
-              <img
+              <Image
                 key={index}
                 src={url}
                 alt={`Post image ${index + 1}`}
+                width={400}
+                height={192}
                 className="w-full h-48 object-cover rounded-lg"
               />
             ))}
