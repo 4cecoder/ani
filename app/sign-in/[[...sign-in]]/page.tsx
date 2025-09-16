@@ -12,8 +12,8 @@ export default function SignInPage() {
       </div>
 
       <div className="relative z-10 flex items-center justify-center min-h-screen p-4">
-        <div className="bg-black/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl p-8 max-w-md w-full">
-          <div className="text-center mb-6">
+        <div className="bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl p-6 max-w-md w-full">
+          <div className="text-center mb-8">
             <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4">
               <span className="text-white font-bold text-2xl">🎉</span>
             </div>
@@ -21,41 +21,43 @@ export default function SignInPage() {
             <p className="text-gray-300">Sign in to join the hangout</p>
           </div>
           
-          <SignIn
+          <div className="flex justify-center">
+            <SignIn
             appearance={{
               variables: {
                 colorPrimary: "#8b5cf6",
-                colorBackground: "transparent",
-                colorInputBackground: "hsl(var(--muted))",
-                colorInputText: "hsl(var(--foreground))",
-                colorText: "hsl(var(--foreground))",
-                colorTextSecondary: "hsl(var(--muted-foreground))",
+                colorBackground: "#1f2937",
+                colorInputBackground: "#374151",
+                colorInputText: "#ffffff",
+                colorText: "#ffffff",
+                colorTextSecondary: "#d1d5db",
                 borderRadius: "0.75rem",
                 fontFamily: "inherit",
                 fontSize: "0.875rem"
               },
               elements: {
-                card: "bg-transparent shadow-none border-none",
-                headerTitle: "text-foreground text-xl font-semibold",
-                headerSubtitle: "text-muted-foreground",
+                card: "bg-gray-800 shadow-none border-none",
+                headerTitle: "text-white text-xl font-semibold",
+                headerSubtitle: "text-gray-300",
                 formButtonPrimary: "bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium rounded-lg transition-all duration-200 transform hover:scale-105",
-                formFieldInput: "bg-muted border-border focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-lg transition-all duration-200",
-                formFieldLabel: "text-foreground font-medium",
-                footerActionLink: "text-primary hover:text-primary/80 transition-colors duration-200",
-                socialButtonsBlockButton: "bg-muted border-border hover:bg-muted/80 text-foreground rounded-lg transition-all duration-200",
-                dividerLine: "bg-border",
-                dividerText: "text-muted-foreground",
-                identityPreviewText: "text-foreground",
-                identityPreviewEditButton: "text-primary hover:text-primary/80",
-                formFieldInputShowPasswordButton: "text-muted-foreground hover:text-foreground",
-                formFieldInputShowPasswordIcon: "text-muted-foreground",
-                footerActionText: "text-muted-foreground",
-                formFieldErrorText: "text-red-500",
-                alertText: "text-red-500",
-                formFieldSuccessText: "text-green-500"
+                formFieldInput: "bg-gray-700 border-gray-600 text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 rounded-lg transition-all duration-200",
+                formFieldLabel: "text-white font-medium",
+                footerActionLink: "text-purple-400 hover:text-purple-300 transition-colors duration-200",
+                socialButtonsBlockButton: "bg-gray-700 border-gray-600 hover:bg-gray-600 text-white rounded-lg transition-all duration-200",
+                dividerLine: "bg-gray-600",
+                dividerText: "text-gray-400",
+                identityPreviewText: "text-white",
+                identityPreviewEditButton: "text-purple-400 hover:text-purple-300",
+                formFieldInputShowPasswordButton: "text-gray-400 hover:text-white",
+                formFieldInputShowPasswordIcon: "text-gray-400",
+                footerActionText: "text-gray-400",
+                formFieldErrorText: "text-red-400",
+                alertText: "text-red-400",
+                formFieldSuccessText: "text-green-400"
               }
             }}
           />
+          </div>
         </div>
       </div>
     </div>
